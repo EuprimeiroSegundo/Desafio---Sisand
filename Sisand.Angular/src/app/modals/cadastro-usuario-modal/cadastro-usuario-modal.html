@@ -1,0 +1,113 @@
+<div class="modal fade" id="cadastroUsuarioModal" tabindex="-1" aria-labelledby="cadastroUsuarioModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered"> 
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cadastroUsuarioModalLabel">
+          {{ isEditing ? 'Alterar Usuário: ' + cadastroForm.getRawValue().login : 'Cadastro de Novo Usuário' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="fecharModal()" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        
+        <div *ngIf="erroCadastro" class="alert alert-danger">{{ erroCadastro }}</div>
+
+        <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()">
+
+          <div class="row">
+            
+            <div class="col-md-6 mb-3">
+              <label for="login" class="form-label">Login</label>
+              <input type="text" id="login" formControlName="login" class="form-control" [class.is-invalid]="cadastroForm.get('login')?.invalid && cadastroForm.get('login')?.touched">
+              <div *ngIf="cadastroForm.get('login')?.errors && cadastroForm.get('login')?.touched" class="invalid-feedback">
+                <div *ngIf="cadastroForm.get('login')?.errors?.['required']">O campo Login é obrigatório.</div>
+                <div *ngIf="cadastroForm.get('login')?.errors?.['minlength']">O login deve ter pelo menos 3 caracteres.</div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" id="email" formControlName="email" class="form-control" [class.is-invalid]="cadastroForm.get('email')?.invalid && cadastroForm.get('email')?.touched">
+              <div *ngIf="cadastroForm.get('email')?.errors && cadastroForm.get('email')?.touched" class="invalid-feedback">
+                <div *ngIf="cadastroForm.get('email')?.errors?.['required']">O campo Email é obrigatório.</div>
+                <div *ngIf="cadastroForm.get('email')?.errors?.['email']">O Email é inválido.</div>
+              </div>
+            </div>
+
+          </div> <div class="row">
+            <div class="col-md-12 mb-3">
+              <label for="nomeCompleto" class="form-label">Nome Completo</label>
+              <input type="text" id="nomeCompleto" formControlName="nomeCompleto" class="form-control" [class.is-invalid]="cadastroForm.get('nomeCompleto')?.invalid && cadastroForm.get('nomeCompleto')?.touched">
+              <div *ngIf="cadastroForm.get('nomeCompleto')?.errors && cadastroForm.get('nomeCompleto')?.touched" class="invalid-feedback">
+                <div *ngIf="cadastroForm.get('nomeCompleto')?.errors?.['required']">O campo Nome Completo é obrigatório.</div>
+                <div *ngIf="cadastroForm.get('nomeCompleto')?.errors?.['minlength']">O Nome Completo deve ter pelo menos 6 caracteres.</div>
+              </div>
+            </div>
+          </div> <div class="row">
+            
+            <div class="col-md-6 mb-3">
+              <label for="telefone" class="form-label">Telefone (Somente Números)</label>
+              <input 
+                type="tel" 
+                id="telefone" 
+                formControlName="telefone" 
+                class="form-control" 
+                [class.is-invalid]="cadastroForm.get('telefone')?.invalid && cadastroForm.get('telefone')?.touched"
+                pattern="\d*" 
+              >
+              <div *ngIf="cadastroForm.get('telefone')?.errors && cadastroForm.get('telefone')?.touched" class="invalid-feedback">
+                <div *ngIf="cadastroForm.get('telefone')?.errors?.['required']">O campo Telefone é obrigatório.</div>
+                <div *ngIf="cadastroForm.get('telefone')?.errors?.['minlength']">O telefone deve ter no mínimo 10 dígitos.</div>
+                <div *ngIf="cadastroForm.get('telefone')?.errors?.['maxlength']">O telefone deve ter no máximo 11 dígitos.</div>
+                <div *ngIf="cadastroForm.get('telefone')?.errors?.['pattern']">Use apenas números.</div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="permissao" class="form-label">Permissão</label>
+              <select id="permissao" formControlName="permissao" class="form-select" [class.is-invalid]="cadastroForm.get('permissao')?.invalid && cadastroForm.get('permissao')?.touched">
+                <option *ngFor="let p of permissoesDisponiveis" [value]="p">{{ p | titlecase }}</option>
+              </select>
+              <div *ngIf="cadastroForm.get('permissao')?.errors && cadastroForm.get('permissao')?.touched" class="invalid-feedback">
+                O campo Permissão é obrigatório.
+              </div>
+            </div>
+
+          </div> <div class="row"> <div class="col-md-12 mb-3">
+              <div *ngIf="isEditing" class="form-check mb-2">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="alterarSenhaCheck"
+                  [checked]="alterarSenha"
+                  (change)="onAlterarSenhaChange($event.target.checked)"
+                >
+                <label class="form-check-label" for="alterarSenhaCheck">
+                  Alterar Senha
+                </label>
+              </div>
+
+              <label for="senha" class="form-label">{{ isEditing ? 'Nova Senha' : 'Senha' }}</label>
+              <input 
+                type="password" 
+                id="senha" 
+                formControlName="senha" 
+                class="form-control" 
+                [class.is-invalid]="cadastroForm.get('senha')?.invalid && cadastroForm.get('senha')?.touched"
+              >
+              <div *ngIf="cadastroForm.get('senha')?.errors && cadastroForm.get('senha')?.touched" class="invalid-feedback">
+                <div *ngIf="cadastroForm.get('senha')?.errors?.['required']">A senha é obrigatória.</div>
+                <div *ngIf="cadastroForm.get('senha')?.errors?.['minlength']">A senha deve ter pelo menos 8 caracteres.</div>
+              </div>
+            </div>
+          </div> <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-secondary" (click)="fecharModal()">Cancelar</button> <button type="submit" class="btn btn-success" [disabled]="cadastroForm.invalid || loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              {{ isEditing ? 'Salvar Alterações' : 'Cadastrar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

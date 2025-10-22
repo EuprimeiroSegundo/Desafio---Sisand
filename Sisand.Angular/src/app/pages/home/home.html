@@ -1,0 +1,149 @@
+<div class="container mt-4 bg-dark text-white p-3 rounded mt-5"> 
+  
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Lista de Usuários</h2>
+    
+    <div class="d-flex flex-column flex-md-row align-items-end">
+        <div class="btn-group mb-2 mb-md-0 me-md-2" role="group" aria-label="Ações do Usuário">
+            <button (click)="cadastrarUsuario()" class="btn btn-success" [disabled]="!authService.temPermissaoMinima(2)">
+                Cadastrar
+            </button>
+            <button 
+                (click)="alterarDadosProprios()" 
+                class="btn btn-warning"
+                [disabled]="!authService.temPermissaoMinima(2)"
+            >
+                Alterar
+            </button>
+            <button (click)="logout()" class="btn btn-danger">Sair</button>
+        </div>
+        <button (click)="showFilterModal()" class="btn btn-info">
+            Filtrar <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+        </button>
+        
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="alert alert-primary">Carregando usuários...</div>
+  <div *ngIf="error" class="alert alert-warning">Erro ao carregar dados. Tente novamente.</div>
+  
+  <div class="table-responsive" *ngIf="!loading && !error">
+    <table class="table table-striped table-hover table-dark text-center">
+      <thead>
+        <tr>
+          <th>Login</th>
+          <th>Email</th>
+          <th>Nome Completo</th>
+          <th>Telefone</th>
+          <th>Permissão</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let usuario of filteredUsuarios">
+          <td>{{ usuario.login }}</td>
+          <td>{{ usuario.email }}</td>
+          <td>{{ usuario.nomeCompleto }}</td>
+          <td>{{ usuario.telefone | telefone }}</td>
+          <td>{{ usuario.permissao }}</td>
+          
+          <td *ngIf="canSeeActions(usuario); else noActions">
+            <button 
+              (click)="alterarUsuario(usuario)" 
+              class="btn btn-sm btn-primary me-2"
+              title="Alterar"
+              [disabled]="!authService.temPermissaoMinima(3) && authService.currentUser()?.usuario?.login !== usuario.login"
+            >
+              Alterar
+            </button>
+            <button 
+              (click)="deletarUsuario(usuario.login)" 
+              class="btn btn-sm btn-danger"
+              title="Deletar"
+              [disabled]="!canDeleteUser(usuario)"
+            >
+              Deletar
+            </button>
+          </td>
+          <ng-template #noActions>
+            <td>-</td>
+          </ng-template>
+        </tr>
+      </tbody>
+      <tfoot *ngIf="filteredUsuarios.length === 0">
+          <tr>
+            <td colspan="6" class="text-center">Nenhum usuário encontrado.</td>
+          </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<app-cadastro-usuario-modal 
+  (usuarioCadastrado)="onUsuarioCadastrado()"
+  (usuarioAlterado)="onUsuarioAlterado($event)" 
+>
+</app-cadastro-usuario-modal>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmModalLabel">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cancelDelete()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="deleteError" class="alert alert-danger">{{ deleteError }}</div>
+        <p>Tem certeza que deseja deletar o usuário <strong>{{ loginToDelete }}</strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleteLoading">
+          <span *ngIf="deleteLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Ok
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="filterModalLabel">Filtros de Usuários</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="filterModalRef.hide()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form #filterFormRef="ngForm" (ngSubmit)="applyFilters()">
+          
+          <div class="mb-3">
+            <label for="filterLogin" class="form-label">Login</label>
+            <input type="text" id="filterLogin" name="login" [(ngModel)]="filterForm.login" class="form-control">
+          </div>
+          
+          <div class="mb-3">
+            <label for="filterNomeCompleto" class="form-label">Nome Completo</label>
+            <input type="text" id="filterNomeCompleto" name="nomeCompleto" [(ngModel)]="filterForm.nomeCompleto" class="form-control">
+          </div>
+          
+          <div class="mb-3">
+            <label for="filterPermissao" class="form-label">Permissão</label>
+            <select id="filterPermissao" name="permissao" [(ngModel)]="filterForm.permissao" class="form-select">
+              <option *ngFor="let p of permissoesDisponiveis" [value]="p">{{ p | titlecase }}</option>
+            </select>
+          </div>
+          
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">Limpar Filtros</button>
+            <button type="submit" class="btn btn-primary" [disabled]="isFilterButtonDisabled()">
+              Aplicar Filtros
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

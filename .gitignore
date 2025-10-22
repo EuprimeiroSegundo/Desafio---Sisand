@@ -1,26 +1,26 @@
 # Angular specific
-/dist/
-/out-tsc/
-/tmp/
-/coverage/
-/e2e/test-output/
-/.angular/
-.angular/
+/Sisand.Angular/dist/
+/Sisand.Angular/out-tsc/
+/Sisand.Angular/tmp/
+/Sisand.Angular/coverage/
+/Sisand.Angular/e2e/test-output/
+/Sisand.Angular/.angular/
+/Sisand.Angular.angular/
 
 # Node modules and dependency files
-/node_modules/
-/package-lock.json
-/yarn.lock
+/Sisand.Angular/node_modules/
+/Sisand.Angular/package-lock.json
+/Sisand.Angular/yarn.lock
 
 # Environment files
-/.env
+/Sisand.Angular/.env
 
 # Angular CLI and build artefacts
-/.angular-cli.json
-/.ng/
+/Sisand.Angular/.angular-cli.json
+/Sisand.Angular/.ng/
 
 # TypeScript cache
-*.tsbuildinfo
+/Sisand.Angular/*.tsbuildinfo
 
 # Logs
 npm-debug.log*
@@ -34,7 +34,6 @@ yarn-error.log*
 **/*.bak
 
 .git
-.dockerignore
 
 *.suo
 .vscode/
