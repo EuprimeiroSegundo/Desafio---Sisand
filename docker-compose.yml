@@ -1,0 +1,35 @@
+services:
+  api:
+    image: sisand-api:latest
+    build:
+      context: ./Sisand.Core
+      dockerfile: Dockerfile.Core
+    container_name: sisand_core_api
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sqlserver
+    networks:
+      - sisand-network
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sisand_sqlserver
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=S1s@andP@ssW0rd
+    ports:
+      - "1433:1433"
+    volumes:
+      - sisand_sql_data:/var/opt/mssql
+    networks:
+      - sisand-network
+
+volumes:
+  sisand_sql_data:
+
+networks:
+  sisand-network:
+    driver: bridge

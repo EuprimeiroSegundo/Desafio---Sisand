@@ -26,3 +26,16 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+**/bin/
+**/obj/
+
+**/*.nupkg
+**/*.bak
+
+.git
+.dockerignore
+
+*.suo
+.vscode/
+.vs/
