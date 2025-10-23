@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Sisand.Core.Application.DTOs;
 using Sisand.Core.Application.Exceptions;
 using Sisand.Core.Domain.Entities;
-using Sisand.Core.Application.DTOs;
 using Sisand.Core.Application.Interfaces;
 
 
@@ -49,7 +48,6 @@ namespace Sisand.Core.API.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost("CadastrarUsuario")]
         public async Task<IActionResult> CadastrarUsuario(CadastrarUsuarioDTO usuarioDTO)
 

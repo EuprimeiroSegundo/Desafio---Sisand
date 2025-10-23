@@ -1,21 +1,24 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
+# 1. Copie o arquivo da solução
 COPY ["Sisand.Core.sln", "./"]
-COPY ["./Sisand.Core.API/*.csproj", "Sisand.Core.API/"]
-COPY ["./Sisand.Core.Data/*.csproj", "Sisand.Core.Data/"]
-COPY ["./Sisand.Core.Domain/*.csproj", "Sisand.Core.Domain/"]
-COPY ["./Sisand.Core.Ioc/*.csproj", "Sisand.Core.Ioc/"]
-COPY ["./Sisand.Core.Utils/*.csproj", "Sisand.Core.Utils/"]
-COPY ["./Sisand.Core.Application/*.csproj", "Sisand.Core.Application/"]
-COPY ["./Sisand.Core.Tests/*.csproj", "Sisand.Core.Tests/"]
 
-RUN dotnet restore Sisand.Core.sln
-
+# 2. Copie todos os arquivos .csproj e tudo o que for necessário para o RESTORE
+# O uso de '**/.../*.csproj' é mais robusto, mas o 'COPY . .' é mais simples
+# para uma estrutura como a sua, pois garante que a estrutura de pastas
+# dentro do container (/src) espelhe exatamente a estrutura no host (Sisand.Core).
+# Vamos copiar TUDO de uma vez, otimizando o cache para esta etapa.
 COPY . .
 
+# 3. Restaure as dependências. Agora com todos os projetos e a solução no /src,
+# o restore deve encontrar todos os arquivos .csproj referenciados pela .sln.
+RUN dotnet restore Sisand.Core.sln
+
+# 4. Publique a aplicação. Use o --no-restore agora, pois a restauração já foi feita.
 RUN dotnet publish "Sisand.Core.API/Sisand.Core.API.csproj" -c Release -o /app/publish --no-restore
 
+# --- Stage Final (inalterado) ---
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final 
 WORKDIR /app
 COPY --from=build /app/publish .
